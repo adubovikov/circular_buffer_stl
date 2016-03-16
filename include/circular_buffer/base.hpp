@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <cassert>
 
-namespace boost {
+namespace cb {
 
 /*!
     \class circular_buffer
@@ -3058,5 +3058,5 @@ inline void swap(circular_buffer<T, Alloc>& lhs, circular_buffer<T, Alloc>& rhs)
     lhs.swap(rhs);
 }
 
-} // namespace boost
+} // namespace cb
 
