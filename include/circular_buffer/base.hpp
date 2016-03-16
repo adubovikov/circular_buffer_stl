@@ -86,10 +86,10 @@ public:
     typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer;
 
     //! A reference to an element.
-    typedef typename std::allocator_traits<Alloc>::reference reference;
+    typedef typename std::allocator_traits<Alloc>::value_type& reference;
 
     //! A const reference to an element.
-    typedef typename std::allocator_traits<Alloc>::const_reference const_reference;
+    typedef typename const std::allocator_traits<Alloc>::value_type& const_reference;
 
     //! The distance type.
     /*!
@@ -1747,7 +1747,6 @@ public:
             <code>rinsert(iterator, InputIterator, InputIterator)</code>
     */
     void insert(iterator pos, size_type n, param_value_type item) {
-        assert(pos.is_valid(this)); // check for uninitialized or invalidated iterator
         if (n == 0)
             return;
         size_type copy = capacity() - (end() - pos);
@@ -2113,8 +2112,6 @@ public:
             <code>erase_begin(size_type)</code>, <code>erase_end(size_type)</code>, <code>clear()</code>
     */
     iterator erase(iterator first, iterator last) {
-        assert(first.is_valid(this)); // check for uninitialized or invalidated iterator
-        assert(last.is_valid(this));  // check for uninitialized or invalidated iterator
         assert(first <= last);        // check for wrong range
         if (first == last)
             return first;
@@ -2342,7 +2339,7 @@ private:
     //! Allocate memory.
     pointer allocate(size_type n) {
         if (n > max_size())
-            throw_exception(std::length_error("circular_buffer"));
+            throw std::length_error("circular_buffer");
 #if CB_ENABLE_DEBUG
         pointer p = (n == 0) ? 0 : m_alloc.allocate(n);
         cb_details::do_fill_uninitialized_memory(p, sizeof(value_type) * n);
@@ -2423,7 +2420,7 @@ private:
 #if CB_ENABLE_DEBUG
         destroy_content(std::false_type());
 #else
-        destroy_content(is_scalar<value_type>());
+        destroy_content(std::is_scalar<value_type>());
 #endif
     }
 

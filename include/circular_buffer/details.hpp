@@ -50,7 +50,7 @@ struct const_traits {
     // Basic types
     typedef typename Traits::value_type value_type;
     typedef typename Traits::const_pointer pointer;
-    typedef typename Traits::const_reference reference;
+    typedef typename const Traits::value_type& reference;
     typedef typename Traits::size_type size_type;
     typedef typename Traits::difference_type difference_type;
 
@@ -67,7 +67,7 @@ struct nonconst_traits {
     // Basic types
     typedef typename Traits::value_type value_type;
     typedef typename Traits::pointer pointer;
-    typedef typename Traits::reference reference;
+    typedef typename Traits::value_type& reference;
     typedef typename Traits::size_type size_type;
     typedef typename Traits::difference_type difference_type;
 
@@ -280,7 +280,6 @@ struct iterator :
 
     //! Dereferencing operator.
     reference operator * () const {
-        assert(is_valid(m_buff)); // check for uninitialized or invalidated iterator
         assert(m_it != 0);        // check for iterator pointing to end()
         return *m_it;
     }
@@ -291,14 +290,11 @@ struct iterator :
     //! Difference operator.
     template <class Traits0>
     difference_type operator - (const iterator<Buff, Traits0>& it) const {
-        assert(is_valid(m_buff));    // check for uninitialized or invalidated iterator
-        assert(it.is_valid(m_buff)); // check for uninitialized or invalidated iterator
         return linearize_pointer(*this) - linearize_pointer(it);
     }
 
     //! Increment operator (prefix).
     iterator& operator ++ () {
-        assert(is_valid(m_buff)); // check for uninitialized or invalidated iterator
         assert(m_it != 0);        // check for iterator pointing to end()
         m_buff->increment(m_it);
         if (m_it == m_buff->m_last)
@@ -315,7 +311,6 @@ struct iterator :
 
     //! Decrement operator (prefix).
     iterator& operator -- () {
-        assert(is_valid(m_buff));        // check for uninitialized or invalidated iterator
         assert(m_it != m_buff->m_first); // check for iterator pointing to begin()
         if (m_it == 0)
             m_it = m_buff->m_last;
@@ -332,7 +327,6 @@ struct iterator :
 
     //! Iterator addition.
     iterator& operator += (difference_type n) {
-        assert(is_valid(m_buff)); // check for uninitialized or invalidated iterator
         if (n > 0) {
             assert(m_buff->end() - *this >= n); // check for too large n
             m_it = m_buff->add(m_it, n);
@@ -349,7 +343,6 @@ struct iterator :
 
     //! Iterator subtraction.
     iterator& operator -= (difference_type n) {
-        assert(is_valid(m_buff)); // check for uninitialized or invalidated iterator
         if (n > 0) {
             assert(*this - m_buff->begin() >= n); // check for too large n
             m_it = m_buff->sub(m_it == 0 ? m_buff->m_last : m_it, n);
@@ -370,24 +363,18 @@ struct iterator :
     //! Equality.
     template <class Traits0>
     bool operator == (const iterator<Buff, Traits0>& it) const {
-        assert(is_valid(m_buff));    // check for uninitialized or invalidated iterator
-        assert(it.is_valid(m_buff)); // check for uninitialized or invalidated iterator
         return m_it == it.m_it;
     }
 
     //! Inequality.
     template <class Traits0>
     bool operator != (const iterator<Buff, Traits0>& it) const {
-        assert(is_valid(m_buff));    // check for uninitialized or invalidated iterator
-        assert(it.is_valid(m_buff)); // check for uninitialized or invalidated iterator
         return m_it != it.m_it;
     }
 
     //! Less.
     template <class Traits0>
     bool operator < (const iterator<Buff, Traits0>& it) const {
-        assert(is_valid(m_buff));    // check for uninitialized or invalidated iterator
-        assert(it.is_valid(m_buff)); // check for uninitialized or invalidated iterator
         return linearize_pointer(*this) < linearize_pointer(it);
     }
 
