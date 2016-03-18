@@ -50,7 +50,7 @@ struct const_traits {
     // Basic types
     typedef typename Traits::value_type value_type;
     typedef typename Traits::const_pointer pointer;
-    typedef typename const Traits::value_type& reference;
+    typedef const typename Traits::value_type& reference;
     typedef typename Traits::size_type size_type;
     typedef typename Traits::difference_type difference_type;
 

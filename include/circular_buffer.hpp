@@ -16,12 +16,7 @@
 #include <cassert>
 #include <iterator>
 
-#define CB_IS_CONVERTIBLE (Iterator, Type) \
-    static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, Type>::value))
-
 #include "circular_buffer/debug.hpp"
 #include "circular_buffer/details.hpp"
 #include "circular_buffer/base.hpp"
 #include "circular_buffer/space_optimized.hpp"
-
-#undef CB_IS_CONVERTIBLE

@@ -494,11 +494,11 @@ public:
     circular_buffer_space_optimized(capacity_type capacity_ctrl, InputIterator first, InputIterator last,
         const allocator_type& alloc = allocator_type())
     : circular_buffer<T, Alloc>(
-        init_capacity(capacity_ctrl, first, last, is_integral<InputIterator>()),
+        init_capacity(capacity_ctrl, first, last, std::is_integral<InputIterator>()),
         first, last, alloc)
     , m_capacity_ctrl(capacity_ctrl) {
         reduce_capacity(
-            is_same< typename iterator_category<InputIterator>::type, std::input_iterator_tag >());
+                        std::is_same< typename std::iterator_traits<InputIterator>::iterator_category::type, std::input_iterator_tag >());
     }
 
 #if defined(CB_NEVER_DEFINED)
@@ -1143,7 +1143,7 @@ public:
     */
     template <class InputIterator>
     void insert(iterator pos, InputIterator first, InputIterator last) {
-        insert(pos, first, last, is_integral<InputIterator>());
+        insert(pos, first, last, std::is_integral<InputIterator>());
     }
 
     //! Insert an element before the specified position.
@@ -1356,7 +1356,7 @@ public:
     */
     template <class InputIterator>
     void rinsert(iterator pos, InputIterator first, InputIterator last) {
-        rinsert(pos, first, last, is_integral<InputIterator>());
+        rinsert(pos, first, last, std::is_integral<InputIterator>());
     }
 
     //! Remove an element at the specified position.
@@ -1589,8 +1589,8 @@ private:
     template <class Iterator>
     static size_type init_capacity(const capacity_type& capacity_ctrl, Iterator first, Iterator last,
         const std::false_type&) {
-        CB_IS_CONVERTIBLE(Iterator, value_type); // check for invalid iterator type
-        return init_capacity(capacity_ctrl, first, last, typename iterator_category<Iterator>::type());
+        static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, value_type>::value), "Invalid iterator type");
+        return init_capacity(capacity_ctrl, first, last, Iterator::template iterator_category<Iterator>::type());
     }
 
     //! Specialized method for determining the initial capacity.

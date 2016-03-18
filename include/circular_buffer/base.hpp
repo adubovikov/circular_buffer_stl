@@ -89,7 +89,7 @@ public:
     typedef typename std::allocator_traits<Alloc>::value_type& reference;
 
     //! A const reference to an element.
-    typedef typename const std::allocator_traits<Alloc>::value_type& const_reference;
+    typedef const typename std::allocator_traits<Alloc>::value_type& const_reference;
 
     //! The distance type.
     /*!
@@ -1119,7 +1119,7 @@ public:
     template <class InputIterator>
     circular_buffer(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type())
     : m_alloc(alloc) {
-        initialize(first, last, is_integral<InputIterator>());
+        initialize(first, last, std::is_integral<InputIterator>());
     }
 
     //! Create a <code>circular_buffer</code> with the specified capacity and filled with a copy of the range.
@@ -1149,7 +1149,7 @@ public:
     circular_buffer(capacity_type buffer_capacity, InputIterator first, InputIterator last,
         const allocator_type& alloc = allocator_type())
     : m_alloc(alloc) {
-        initialize(buffer_capacity, first, last, is_integral<InputIterator>());
+        initialize(buffer_capacity, first, last, std::is_integral<InputIterator>());
     }
 
     //! The destructor.
@@ -1311,7 +1311,7 @@ public:
     */
     template <class InputIterator>
     void assign(InputIterator first, InputIterator last) {
-        assign(first, last, is_integral<InputIterator>());
+        assign(first, last, std::is_integral<InputIterator>());
     }
 
     //! Assign a copy of the range into the <code>circular_buffer</code> specifying the capacity.
@@ -1350,7 +1350,7 @@ public:
     */
     template <class InputIterator>
     void assign(capacity_type buffer_capacity, InputIterator first, InputIterator last) {
-        assign(buffer_capacity, first, last, is_integral<InputIterator>());
+        assign(buffer_capacity, first, last, std::is_integral<InputIterator>());
     }
 
     //! Swap the contents of two <code>circular_buffer</code>s.
@@ -1371,12 +1371,11 @@ public:
         \sa <code>swap(circular_buffer<T, Alloc>&, circular_buffer<T, Alloc>&)</code>
     */
     void swap(circular_buffer<T, Alloc>& cb) noexcept {
-        swap_allocator(cb, is_stateless<allocator_type>());
-        adl_move_swap(m_buff, cb.m_buff);
-        adl_move_swap(m_end, cb.m_end);
-        adl_move_swap(m_first, cb.m_first);
-        adl_move_swap(m_last, cb.m_last);
-        adl_move_swap(m_size, cb.m_size);
+        std::swap(m_buff, cb.m_buff);
+        std::swap(m_end, cb.m_end);
+        std::swap(m_first, cb.m_first);
+        std::swap(m_last, cb.m_last);
+        std::swap(m_size, cb.m_size);
 #if CB_ENABLE_DEBUG
         invalidate_all_iterators();
         cb.invalidate_all_iterators();
@@ -1806,7 +1805,7 @@ public:
     template <class InputIterator>
     void insert(iterator pos, InputIterator first, InputIterator last) {
         assert(pos.is_valid(this)); // check for uninitialized or invalidated iterator
-        insert(pos, first, last, is_integral<InputIterator>());
+        insert(pos, first, last, std::is_integral<InputIterator>());
     }
 
 private:
@@ -2049,7 +2048,7 @@ public:
     template <class InputIterator>
     void rinsert(iterator pos, InputIterator first, InputIterator last) {
         assert(pos.is_valid(this)); // check for uninitialized or invalidated iterator
-        rinsert(pos, first, last, is_integral<InputIterator>());
+        rinsert(pos, first, last, std::is_integral<InputIterator>());
     }
 
 // Erase
@@ -2241,7 +2240,7 @@ public:
 #if CB_ENABLE_DEBUG
         erase_begin(n, std::false_type());
 #else
-        erase_begin(n, is_scalar<value_type>());
+        erase_begin(n, std::is_scalar<value_type>());
 #endif
     }
 
@@ -2273,7 +2272,7 @@ public:
 #if CB_ENABLE_DEBUG
         erase_end(n, std::false_type());
 #else
-        erase_end(n, is_scalar<value_type>());
+        erase_end(n, std::is_scalar<value_type>());
 #endif
     }
 
@@ -2303,7 +2302,7 @@ private:
     //! Check if the <code>index</code> is valid.
     void check_position(size_type index) const {
         if (index >= size())
-            throw_exception(std::out_of_range("circular_buffer"));
+            throw std::out_of_range("circular_buffer");
     }
 
     //! Increment the pointer.
@@ -2476,8 +2475,8 @@ private:
     //! Specialized initialize method.
     template <class Iterator>
     void initialize(Iterator first, Iterator last, const std::false_type&) {
-        CB_IS_CONVERTIBLE(Iterator, value_type); // check for invalid iterator type
-        initialize(first, last, typename iterator_category<Iterator>::type());
+        static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, value_type>::value), "Invalid iterator type");
+        initialize(first, last, typename std::iterator_traits<Iterator>::iterator_category::type());
     }
 
     //! Specialized initialize method.
@@ -2509,8 +2508,8 @@ private:
     //! Specialized initialize method.
     template <class Iterator>
     void initialize(capacity_type buffer_capacity, Iterator first, Iterator last, const std::false_type&) {
-        CB_IS_CONVERTIBLE(Iterator, value_type); // check for invalid iterator type
-        initialize(buffer_capacity, first, last, typename iterator_category<Iterator>::type());
+        static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, value_type>::value), "Invalid iterator type");
+        initialize(buffer_capacity, first, last, typename std::iterator_traits<Iterator>::iterator_category::type());
     }
 
     //! Specialized initialize method.
@@ -2599,8 +2598,8 @@ private:
     //! Specialized assign method.
     template <class Iterator>
     void assign(Iterator first, Iterator last, const std::false_type&) {
-        CB_IS_CONVERTIBLE(Iterator, value_type); // check for invalid iterator type
-        assign(first, last, typename iterator_category<Iterator>::type());
+        static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, value_type>::value), "Invalid iterator type");
+        assign(first, last, typename std::iterator_traits<Iterator>::iterator_category::type());
     }
 
     //! Specialized assign method.
@@ -2630,8 +2629,8 @@ private:
     //! Specialized assign method.
     template <class Iterator>
     void assign(capacity_type new_capacity, Iterator first, Iterator last, const std::false_type&) {
-        CB_IS_CONVERTIBLE(Iterator, value_type); // check for invalid iterator type
-        assign(new_capacity, first, last, typename iterator_category<Iterator>::type());
+        static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, value_type>::value), "Invalid iterator type");
+        assign(new_capacity, first, last, typename std::iterator_traits<Iterator>::iterator_category::type());
     }
 
     //! Specialized assign method.
@@ -2735,8 +2734,8 @@ private:
     //! Specialized insert method.
     template <class Iterator>
     void insert(const iterator& pos, Iterator first, Iterator last, const std::false_type&) {
-        CB_IS_CONVERTIBLE(Iterator, value_type); // check for invalid iterator type
-        insert(pos, first, last, typename iterator_category<Iterator>::type());
+        static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, value_type>::value), "Invalid iterator type");
+        insert(pos, first, last, typename std::iterator_traits<Iterator>::iterator_category::type());
     }
 
     //! Specialized insert method.
@@ -2822,8 +2821,8 @@ private:
     //! Specialized rinsert method.
     template <class Iterator>
     void rinsert(const iterator& pos, Iterator first, Iterator last, const std::false_type&) {
-        CB_IS_CONVERTIBLE(Iterator, value_type); // check for invalid iterator type
-        rinsert(pos, first, last, typename iterator_category<Iterator>::type());
+        static_assert((std::is_convertible<typename std::iterator_traits<Iterator>::value_type, value_type>::value), "Invalid iterator type");
+        rinsert(pos, first, last, typename std::iterator_traits<Iterator>::iterator_category::type());
     }
 
     //! Specialized insert method.
